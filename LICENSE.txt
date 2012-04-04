@@ -1,0 +1,23 @@
+blackboard-cas authentication module for Blackboard
+Copyright (C) 2004  University of Bristol
+Copyright (C) 2011  Central Piedmont Community College
+
+This program is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free Software
+Foundation; either version 2 of the License, or (at your option) any later
+version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with
+this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+Street, Fifth Floor, Boston, MA 02110-1301 USA.
+
+blackboard-cas is functionally dependent on the Blackboard Learning System,
+which does not fall under the GPL license. Further, you must have the
+appropriate Blackboard Learning System license before you may implement
+blackboard-cas.
+
+Blackboard Learning System is a trademark of Blackboard Inc, Washington, USA.

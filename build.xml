@@ -1,0 +1,133 @@
+<project name="blackboard-cas" default="help" basedir=".">
+	<property environment="env" />
+	<property file="build.properties" />
+	
+	<path id="compile-classpath">
+		<fileset dir="${blackboard.home}/systemlib" includes="**/${blackboard.platform.jar}" />
+		<fileset dir="${blackboard.home}/systemlib" includes="**/commons-io-1.4.jar" />
+		<fileset dir="${blackboard.home}/systemlib" includes="**/commons-lang-2.4.jar" />
+		<fileset dir="${blackboard.home}/systemlib" includes="**/${commons.logging.jar}" />
+		<fileset dir="${blackboard.home}/apps/tomcat" includes="**/servlet-api.jar" />
+		<fileset dir="lib" includes="**/*.jar" />
+
+	</path>
+
+
+	<taskdef resource="net/sf/antcontrib/antcontrib.properties">
+		<classpath>
+			<pathelement location="${basedir}/lib/ant-contrib-1.0b3.jar" />
+		</classpath>
+	</taskdef>
+
+	<target name="init" description="Compile and deploy changes for CAS authN. Push and restart blackboard services." 
+		depends="deploy,stop-blackboard-services,push-blackboard-config,stop-blackboard-services,configure-cas-blackboard-auth,start-blackboard-services">
+		<echo message="Applied changes." />
+	</target>
+
+	<target name="clean" description="Clean up local dist atrifacts and logs.">
+		<echo message="Cleaning local dist artifacts..." />
+		<delete dir="${basedir}/dist" />
+		<delete dir="${basedir}/classes" />
+		<mkdir dir="${basedir}/dist" />
+		<mkdir dir="${basedir}/classes" />
+
+		<antcall target="clean-bb-tomcat-logs" />
+	</target>
+
+	<target name="compile" depends="clean" description="Compile src artifacts.">
+		<echo message="Compiling source artifacts into ${basedir}/classes" />
+		<javac srcdir="${srcdir}" destdir="${basedir}/classes" deprecation="false" debug="true" debuglevel="lines,vars,source" includeAntRuntime="false" classpathref="compile-classpath" />
+
+	</target>
+
+	<target name="clean-bb-tomcat-logs" description="Clean blackboard log files." depends="stop-blackboard-services">
+		<echo message="Cleaning blackboard tomcat and collab-server log files..." />
+
+		<delete verbose="true" failonerror="false">
+			<fileset dir="${blackboard.home}/logs/">
+				<include name="bb-services-log.txt" />
+				<include name="tomcat/*.log" />
+				<include name="tomcat/*.txt" />
+				<include name="collab-server/*.log" />
+				<include name="collab-server/*.txt" />
+
+			</fileset>
+		</delete>
+	</target>
+
+	<target name="package" depends="compile" description="Package JAR files and copy needed property files to the dist directory.">
+		<echo message="Creating local JAR artifact in ${basedir}/dist directory..." />
+		<jar jarfile="${basedir}/dist/${cas.bbauth.jar}" basedir="${basedir}/classes" update="false" />
+
+		<echo message="Copying all other JAR dependencies to ${basedir}/dist directory..." />
+		<copy todir="${basedir}/dist" overwrite="true" includeemptydirs="true" verbose="true" filtering="false" encoding="ISO-8859-1" outputencoding="ISO-8859-1">
+			<fileset dir="${basedir}/lib">
+				<include name="*.jar" />
+			</fileset>
+		</copy>
+
+		<echo message="Copying property files to ${basedir}/dist directory..." />
+		<copy todir="${basedir}/dist" overwrite="true" verbose="true">
+			<filterset filtersfile="build.properties" />
+			<fileset dir="${basedir}">
+				<include name="cas-authentication.properties" />
+			</fileset>
+		</copy>
+
+		<echo message="Creating cas-common.classpath temppate file in ${basedir}/dist directory..." />
+		<echo file="${basedir}/dist/cas-common.classpath" append="false">${blackboard.home}/systemlib/${cas.bbauth.jar}
+${blackboard.home}/systemlib/${cas.java.client.jar}
+${blackboard.home}/systemlib/${xml.sec.jar}</echo>
+	</target>
+
+	<target name="deploy" depends="package" description="Deploy all JAR and property files to blackboard.">
+		<echo message="Copying all JAR artifacts to ${blackboard.home}/systemlib..." />
+		<copy todir="${blackboard.home}/systemlib" overwrite="true" failonerror="true" verbose="true">
+			<fileset dir="${basedir}/dist">
+				<include name="*.jar" />
+			</fileset>
+		</copy>
+
+		<echo message="Copying classpath template file to ${blackboard.home}/config/tomcat/classpath..." />
+		<copy todir="${blackboard.home}/config/tomcat/classpath" overwrite="true" failonerror="true" verbose="true">
+			<fileset dir="${basedir}/dist">
+				<include name="cas-common.classpath" />
+			</fileset>
+		</copy>
+	</target>
+
+	<target name="push-blackboard-config" description="Call blackboard to push and configure deployed changes. Services will be restarted.">
+		<echo message="Calling blackboard to push deployed configurations..." />
+		<echo message="The command automatically stops blackboard services, deploys changes and restarts services again" />
+		<echo message="Changes to configuration files are lost during this process. Services have to be stopped again for additional property file modifications." />
+		<exec dir="${blackboard.home}/tools/admin" executable="${blackboard.home}/tools/admin/PushConfigUpdates.bat" />
+	</target>
+
+	<target name="stop-blackboard-services" description="Stop blackboard services.">
+		<echo message="Stopping blackboard services..." />
+		<exec dir="${blackboard.home}/tools/admin" executable="${blackboard.home}/tools/admin/ServiceController.bat">
+			<arg value="services.stop" />
+		</exec>
+	</target>
+
+	<target name="start-blackboard-services" depends="clean-bb-tomcat-logs" description="Start blackboard services.">
+		<echo message="Starting blackboard services..." />
+		<exec dir="${blackboard.home}/tools/admin" executable="${blackboard.home}/tools/admin/ServiceController.bat">
+			<arg value="services.start" />
+		</exec>
+	</target>
+
+	<target name="configure-cas-blackboard-auth" description="Configure CAS/Blackboard integration settings.">
+		<echo message="Configuring CAS integration settings with blackboard..." />
+		<java classname="net.unicon.blackboard.authentication.BlackboardCasConfigurationManager" classpathref="compile-classpath">
+			<classpath>
+				<fileset dir="dist" includes="**/${cas.bbauth.jar}" />
+				<fileset dir="${blackboard.home}/systemlib" includes="**/commons-collections-3.2.1.jar" />
+			</classpath>
+		</java>
+	</target>
+
+	<target name="help" description="Prints instructions on how to run the build.">
+		<echo message="Use 'ant -projecthelp' to see all available commands" />
+	</target>
+</project>

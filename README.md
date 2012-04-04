@@ -14,7 +14,7 @@ Next, customize the following blackboard files by adding the lines immediately f
 
 ```xml
 
-* C:\blackboard\system\build\bin\launch-app.bat:
+-C:\blackboard\system\build\bin\launch-app.bat:
 
 rem # CAS
 set THIRD_PARTY_CP=%THIRD_PARTY_CP%;cas-bbauth.jar
@@ -22,7 +22,7 @@ set THIRD_PARTY_CP=%THIRD_PARTY_CP%;cas-client-core-3.2.1.jar
 set THIRD_PARTY_CP=%THIRD_PARTY_CP%;xmlsec-1.3.0.jar
 rem # CAS
 
-* C:\blackboard\system\build\bin\launch-tool.bat:
+-C:\blackboard\system\build\bin\launch-tool.bat:
 
 rem # CAS
 set THIRD_PARTY_CP=%THIRD_PARTY_CP%;cas-bbauth.jar
@@ -30,7 +30,7 @@ set THIRD_PARTY_CP=%THIRD_PARTY_CP%;cas-client-core-3.2.1.jar
 set THIRD_PARTY_CP=%THIRD_PARTY_CP%;xmlsec-1.3.0.jar
 rem # CAS`
 	
-* C:\blackboard\apps\collab-server\config\wrapper.conf.bb:
+-C:\blackboard\apps\collab-server\config\wrapper.conf.bb:
 
 # CAS
 wrapper.java.classpath.43=@@bbconfig.basedir@@/systemlib/cas-bbauth.jar
@@ -38,7 +38,7 @@ wrapper.java.classpath.44=@@bbconfig.basedir@@/systemlib/cas-client-core-3.2.1.j
 wrapper.java.classpath.45=@@bbconfig.basedir@@/systemlib/xmlsec-1.3.0.jar
 # CAS
 
-* C:\blackboard\apps\snapshot\config\env.cmd.bb:
+-C:\blackboard\apps\snapshot\config\env.cmd.bb:
 
 rem # CAS
 set CP=%CP%;%BBLIB%\cas-bbauth.jar
@@ -46,7 +46,7 @@ set CP=%CP%;%BBLIB%\cas-client-core-3.2.1.jar
 set CP=%CP%;%BBLIB%\xmlsec-1.3.0.jar
 rem # CAS
 
-* C:\blackboard\apps\content-exchange\bin\content-exchange.bat.bb:
+-C:\blackboard\apps\content-exchange\bin\content-exchange.bat.bb:
 
 rem # CAS
 set CP=%CP%;%BBLIB%\cas-bbauth.jar

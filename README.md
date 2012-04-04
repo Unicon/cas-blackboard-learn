@@ -76,7 +76,7 @@ To log into Blackboard using CAS SSO, append the parameter `useCAS=1` at the end
 ##Logging
 Inside the logs directory of the Blackboard installation folder, you may analyze the following files to examine and troubleshoot CAS behavior (where xyz indicates the file date):
 
-* `bb-services-log-xyz.txt`
+*`bb-services-log-xyz.txt`
 * Tomcat logs inside the tomcat directory (i.e. `stdout-stderror-xyz.log`)
 * Collab server logs inside the `collab-server` directory.
 

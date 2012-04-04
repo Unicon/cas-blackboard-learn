@@ -4,7 +4,8 @@
 "cas-blackboard-learn" is a [CAS](http://www.ja-sig.org/products/cas/) authentication module for [Blackboard](http://www.blackboard.com/). It utilizes the CAS 3.1 client 
 library in order to connect to CAS 3.x servers (using the CAS 2.0 protocol).
 
-This project is based on [CasAuthenticationModule](http://www.bris.ac.uk/ips-projects/portal/pilot/software/blackboard_cas/), developed by the University of Bristol.
+This project is based on [CasAuthenticationModule](http://www.bris.ac.uk/ips-projects/portal/pilot/software/blackboard_cas/), 
+developed by the University of Bristol and it is heavily influenced by the [blackboard-cas](http://code.google.com/p/blackboard-cas/) project on Google Code. 
 
 
 ##Configuration

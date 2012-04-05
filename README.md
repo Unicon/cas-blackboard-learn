@@ -70,7 +70,6 @@ Services are automatically restarted once the `Push Config` step is done.
 
 The `Push Config` step resets Blackboard property files back to their default state! The build will automatically readjust the property values in files
 `config/bb-config.properties` and `config/authentication.properties` so Blackboard can recognize the new authentication mechanism with CAS. 
-The changes to property files are outlined in the below table:
 
 ##Access
 To log into Blackboard using CAS SSO, append the parameter `useCAS=1` at the end of the URL specified by the blackboard.url property, i.e. [http://blackboard.domain.edu/?useCAS=1](http://blackboard.domain.edu/?useCAS=1) 

@@ -57,7 +57,7 @@ rem # CAS
 ```
 
 ##Build
-You'll need an instance of Blackboard in `c:\blackboard` in order to build and apache ant (1.8.2)  to run the build. 
+You'll need an instance of Blackboard in `c:\blackboard` in order to build and [Apache Ant (1.8.2)](http://ant.apache.org/)  to run the build. 
 Once you have configured everything, you can build with ant:
 
 `c:\workspace\cas-blackboard-learn\ant init`
@@ -87,7 +87,7 @@ If you plan to upgrade Blackboard to the next service pack, etc you'll need to m
 before you run upgrade commands.
 
 * Make sure `config/bb-config.properties` and `config/authentication.properties` are reset to their original version.
-* Remove the `cas-common.classpath` file from `c:\blackboard\config/tomcat/classpath`. 
+* Remove the `cas-common.classpath` file from `c:\blackboard\config\tomcat\classpath`. 
 * Execute `Push Config` to enforce the changes.
 * Upgrade Blackboard and repeat the instructions. (You'll have to make the classpath adjustments above again noted in the Configuration section, as 
 the upgrade completely resets everything)

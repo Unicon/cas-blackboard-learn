@@ -29,7 +29,7 @@ rem # CAS
 set THIRD_PARTY_CP=%THIRD_PARTY_CP%;cas-bbauth.jar
 set THIRD_PARTY_CP=%THIRD_PARTY_CP%;cas-client-core-3.2.1.jar
 set THIRD_PARTY_CP=%THIRD_PARTY_CP%;xmlsec-1.3.0.jar
-rem # CAS`
+rem # CAS
 	
 -C:\blackboard\apps\collab-server\config\wrapper.conf.bb:
 
@@ -81,4 +81,14 @@ Inside the logs directory of the Blackboard installation folder, you may analyze
 * `bb-services-log-xyz.txt`
 * Tomcat logs inside the tomcat directory (i.e. `stdout-stderror-xyz.log`)
 * Collab server logs inside the `collab-server` directory.
+
+##Upgrade Notes
+If you plan to upgrade Blackboard to the next service pack, etc you'll need to make sure that certain CAS changes are disabled
+before you run upgrade commands.
+
+* Make sure `config/bb-config.properties` and `config/authentication.properties` are reset to their original version.
+* Remove the `cas-common.classpath` file from `<blackboard-directory>config/tomcat/classpath`. 
+* Execute `Push Config` to enforce the changes.
+* Upgrade Blackboard and repeat the instructions. (You'll have to make the classpath adjustments above again noted in the Configuration section, as 
+the upgrade completely resets everything)
 

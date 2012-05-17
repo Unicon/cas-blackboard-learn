@@ -22,22 +22,14 @@ set THIRD_PARTY_CP=%THIRD_PARTY_CP%;cas-bbauth.jar
 set THIRD_PARTY_CP=%THIRD_PARTY_CP%;cas-client-core-3.2.1.jar
 set THIRD_PARTY_CP=%THIRD_PARTY_CP%;xmlsec-1.3.0.jar
 rem # CAS
-
--C:\blackboard\system\build\bin\launch-tool.bat:
-
-rem # CAS
-set THIRD_PARTY_CP=%THIRD_PARTY_CP%;cas-bbauth.jar
-set THIRD_PARTY_CP=%THIRD_PARTY_CP%;cas-client-core-3.2.1.jar
-set THIRD_PARTY_CP=%THIRD_PARTY_CP%;xmlsec-1.3.0.jar
-rem # CAS
 	
 -C:\blackboard\apps\collab-server\config\wrapper.conf.bb:
 
-# CAS
+rem # CAS
 wrapper.java.classpath.43=@@bbconfig.basedir@@/systemlib/cas-bbauth.jar
 wrapper.java.classpath.44=@@bbconfig.basedir@@/systemlib/cas-client-core-3.2.1.jar
 wrapper.java.classpath.45=@@bbconfig.basedir@@/systemlib/xmlsec-1.3.0.jar
-# CAS
+rem # CAS
 
 -C:\blackboard\apps\snapshot\config\env.cmd.bb:
 
@@ -72,11 +64,13 @@ The `Push Config` step resets Blackboard property files back to their default st
 `config/bb-config.properties` and `config/authentication.properties` so Blackboard can recognize the new authentication mechanism with CAS. 
 
 ##Access
-To log into Blackboard using CAS SSO, append the parameter `useCAS=1` at the end of the URL specified by the blackboard.url property, i.e. [http://blackboard.domain.edu/?useCAS=1](http://blackboard.domain.edu/?useCAS=1) 
+To log into Blackboard without using CAS SSO, append the parameter `disableCAS=1` at the end of the URL specified by 
+the blackboard.url property, i.e. [http://blackboard.domain.edu/?disableCAS=1](http://blackboard.domain.edu/?disableCAS=1) 
 
 
 ##Logging
-Inside the logs directory of the Blackboard installation folder, you may analyze the following files to examine and troubleshoot CAS behavior (where xyz indicates the file date):
+Inside the logs directory of the Blackboard installation folder, you may analyze the following files to 
+examine and troubleshoot CAS behavior (where xyz indicates the file date):
 
 * `bb-services-log-xyz.txt`
 * Tomcat logs inside the tomcat directory (i.e. `stdout-stderror-xyz.log`)

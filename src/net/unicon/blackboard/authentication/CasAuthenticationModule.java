@@ -3,6 +3,7 @@ package net.unicon.blackboard.authentication;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
+import java.util.Enumeration;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -26,7 +27,7 @@ import blackboard.util.Base64Codec;
 
 public class CasAuthenticationModule extends BaseAuthenticationModule implements
 		IUserPassAuthModule {
-	private static final String USE_CAS_PARAMETER_NAME = "useCAS";
+	private static final String DISABLE_CAS_PARAMETER_NAME = "disableCAS";
 
 	private static final String CAS_DEFAULT_LOGIN_PARAM = "/login?";
 
@@ -52,6 +53,7 @@ public class CasAuthenticationModule extends BaseAuthenticationModule implements
 	private String casUrl;
 
 	private void debug(final String str) {
+
 		if (_logger == null)
 			System.out.println(str);
 		else
@@ -146,41 +148,30 @@ public class CasAuthenticationModule extends BaseAuthenticationModule implements
 
 		}
 
-		setCasAuthenticationParameter(request);
 		debug("Returning authenticated user " + uid);
 
 		return uid;
 	}
 
-	private void setCasAuthenticationParameter(HttpServletRequest request) {
-		request.setAttribute(USE_CAS_PARAMETER_NAME, 1);
-		request.getSession().setAttribute(USE_CAS_PARAMETER_NAME, 1);
-	}
-
 	private boolean shouldUseCasAuthentication(final HttpServletRequest request) {
-		boolean useCASAuthentication = false;
+		boolean useCAS = true;
 
-		String useCASparamValue = request.getParameter(USE_CAS_PARAMETER_NAME);
-		if (useCASparamValue != null && useCASparamValue.length() > 0)
-			useCASAuthentication = true;
+		Enumeration<?> en = request.getParameterNames();
 
-		if (!useCASAuthentication) {
-			Object useCas = request.getAttribute(USE_CAS_PARAMETER_NAME);
-			if (useCas != null)
-				useCASAuthentication = true;
+		while (en.hasMoreElements()) {
+			String pName = en.nextElement().toString();
+			
+			if (pName.equalsIgnoreCase(DISABLE_CAS_PARAMETER_NAME)) {
+				debug("Received parameter: " + pName + ". CAS authentication is flagged to be disabled.");
+				useCAS = false;
+			}
 		}
 
-		if (!useCASAuthentication) {
-			Object useCas = request.getSession().getAttribute(USE_CAS_PARAMETER_NAME);
-			if (useCas != null)
-				useCASAuthentication = true;
-		}
-		
-		if (!useCASAuthentication)
-			useCASAuthentication = getCasTicketParameterValue(request) != null;
+		if (!useCAS)
+			useCAS = getCasTicketParameterValue(request) != null;
 
-		debug("Using CAS Authentication for request: " + useCASAuthentication);
-		return useCASAuthentication;
+		debug("Using CAS Authentication for request: " + useCAS);
+		return useCAS;
 	}
 
 	private String getCasTicketParameterValue(final HttpServletRequest request) {
@@ -195,14 +186,13 @@ public class CasAuthenticationModule extends BaseAuthenticationModule implements
 
 		debug("In <doLogout>");
 		boolean shouldUseCAS = shouldUseCasAuthentication(request);
-		 
+
 		debug("Executing blackboard logout protocol...");
 		super.doLogout(request, response);
 
-		
 		String redirectUrl = null;
 		try {
-			if (isCasLogoutCompletely()) {
+			if (isCasLogoutCompletely() && shouldUseCAS) {
 
 				redirectUrl = getCasUrl() + CAS_DEFAULT_LOGOUT_PARAM;
 				if (getCasRedirectUrl() != null
@@ -213,15 +203,14 @@ public class CasAuthenticationModule extends BaseAuthenticationModule implements
 				debug("Logging out from CAS using redirect url: " + redirectUrl);
 				response.sendRedirect(redirectUrl);
 			} else {
-				
+
 				if (shouldUseCAS) {
 					debug("Redirecting to CAS login page " + getCasUrl());
 					redirectUrl = getCasUrl();
 					response.sendRedirect(redirectUrl);
-				}
-				else
+				} else
 					debug("Not using CAS. Proceeding with default logout flow");
-								
+
 			}
 		} catch (final Exception e) {
 			throw new BbSecurityException("Can not reach the logout page at "
@@ -410,12 +399,6 @@ public class CasAuthenticationModule extends BaseAuthenticationModule implements
 		if (gateway != null) {
 			builder.append("&");
 			builder.append(gateway);
-		}
-
-		if (useCAS) {
-			builder.append("&");
-			builder.append(USE_CAS_PARAMETER_NAME);
-			builder.append("=1");
 		}
 
 		final String redirectUrl = builder.toString();

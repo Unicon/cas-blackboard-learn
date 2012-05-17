@@ -20,7 +20,7 @@
 	</taskdef>
 
 	<target name="init" description="Compile and deploy changes for CAS authN. Push and restart blackboard services." 
-		depends="deploy,stop-blackboard-services,push-blackboard-config,stop-blackboard-services,configure-cas-blackboard-auth,start-blackboard-services">
+		depends="stop-blackboard-services,deploy,push-blackboard-config,stop-blackboard-services,configure-cas-blackboard-auth,start-blackboard-services">
 		<echo message="Applied changes." />
 	</target>
 

@@ -1,12 +1,14 @@
-package net.unicon.blackboard.authentication;
+package edu.principia.blackboard.authentication;
 
 import java.io.UnsupportedEncodingException;
+
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.util.Enumeration;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.Cookie;
 
 import org.jasig.cas.client.authentication.AttributePrincipal;
 import org.jasig.cas.client.validation.Assertion;
@@ -73,12 +75,20 @@ public class CasAuthenticationModule extends BaseAuthenticationModule implements
 			BbAuthenticationFailedException, BbCredentialsNotFoundException {
 
 		debug("In <doAuthenticate>");
-		boolean useCASAuthentication = shouldUseCasAuthentication(request);
+		debug("Request url: " + request.getRemoteAddr() + ", query string:"
+				+ request.getQueryString() + ", protocol: "
+				+ request.getProtocol() + ", port:" + request.getRemotePort());
+
+		boolean useCASAuthentication = shouldUseCasAuthentication(request,
+				response);
 
 		if (!useCASAuthentication) {
 			debug("Custom "
 					+ getAuthType()
 					+ " authentication is disabled. Executing default blackboard authentication...");
+
+			disableCas(request, response);
+
 			String user = super.doAuthenticate(request, response);
 
 			debug("Executed default blackboard authentication. Returned:"
@@ -153,17 +163,59 @@ public class CasAuthenticationModule extends BaseAuthenticationModule implements
 		return uid;
 	}
 
-	private boolean shouldUseCasAuthentication(final HttpServletRequest request) {
+	private void disableCas(HttpServletRequest req, HttpServletResponse resp) {
+
+		boolean foundCookie = false;
+
+		if (req.getCookies() != null) {
+			for (Cookie ck : req.getCookies()) {
+				if (ck.getName() != null
+						&& ck.getName().equalsIgnoreCase(
+								DISABLE_CAS_PARAMETER_NAME)) {
+					foundCookie = true;
+
+				}
+			}
+		}
+
+		if (!foundCookie) {
+			Cookie ck = new Cookie(DISABLE_CAS_PARAMETER_NAME, "1");
+			resp.addCookie(ck);
+			debug("Set cookie to disable cas authentication. ");
+		} else {
+			debug("Found existing cookie for " + DISABLE_CAS_PARAMETER_NAME);
+		}
+	}
+
+	private boolean shouldUseCasAuthentication(
+			final HttpServletRequest request, HttpServletResponse resp) {
 		boolean useCAS = true;
 
 		Enumeration<?> en = request.getParameterNames();
 
 		while (en.hasMoreElements()) {
 			String pName = en.nextElement().toString();
-			
+
 			if (pName.equalsIgnoreCase(DISABLE_CAS_PARAMETER_NAME)) {
-				debug("Received parameter: " + pName + ". CAS authentication is flagged to be disabled.");
+				debug("Received request parameter: " + pName
+						+ ". CAS authentication is flagged to be disabled.");
 				useCAS = false;
+			}
+		}
+
+		if (useCAS) {
+			if (request.getCookies() != null && request.getCookies().length > 0) {
+				for (Cookie ck : request.getCookies()) {
+					if (ck.getName() != null
+							&& ck.getName().equalsIgnoreCase(
+									DISABLE_CAS_PARAMETER_NAME)) {
+						debug("Received request cookie "
+								+ DISABLE_CAS_PARAMETER_NAME
+								+ ". CAS authentication is flagged to be disabled.");
+						useCAS = false;
+
+					}
+				}
 			}
 		}
 
@@ -185,13 +237,17 @@ public class CasAuthenticationModule extends BaseAuthenticationModule implements
 			final HttpServletResponse response) throws BbSecurityException {
 
 		debug("In <doLogout>");
-		boolean shouldUseCAS = shouldUseCasAuthentication(request);
+		boolean shouldUseCAS = shouldUseCasAuthentication(request, response);
 
 		debug("Executing blackboard logout protocol...");
 		super.doLogout(request, response);
 
 		String redirectUrl = null;
 		try {
+
+			
+			removeCasDisableParameterCookie(request, response);
+			
 			if (isCasLogoutCompletely() && shouldUseCAS) {
 
 				redirectUrl = getCasUrl() + CAS_DEFAULT_LOGOUT_PARAM;
@@ -215,6 +271,22 @@ public class CasAuthenticationModule extends BaseAuthenticationModule implements
 		} catch (final Exception e) {
 			throw new BbSecurityException("Can not reach the logout page at "
 					+ redirectUrl + ": " + e.getMessage());
+		}
+	}
+
+	private void removeCasDisableParameterCookie(final HttpServletRequest request,
+			HttpServletResponse resp) {
+		if (request.getCookies() != null && request.getCookies().length > 0) {
+			for (Cookie ck : request.getCookies()) {
+				if (ck.getName() != null
+						&& ck.getName().equalsIgnoreCase(
+								DISABLE_CAS_PARAMETER_NAME)) {
+					ck.setMaxAge(0);
+					resp.addCookie(ck);
+					debug("Set cookie " + DISABLE_CAS_PARAMETER_NAME + " maxAge to 0, which should delete the cookie.");
+					break;
+				}
+			}
 		}
 	}
 
@@ -346,12 +418,14 @@ public class CasAuthenticationModule extends BaseAuthenticationModule implements
 
 		debug("In <requestAuthenticate>");
 
-		boolean useCAS = shouldUseCasAuthentication(request);
+		boolean useCAS = shouldUseCasAuthentication(request, response);
 
 		if (!useCAS) {
 			debug("Custom "
 					+ getAuthType()
 					+ " authentication is disabled on blackboard root home. Executing default blackboard authentication request...");
+			disableCas(request, response);
+
 			super.requestAuthenticate(request, response);
 			return;
 		}
